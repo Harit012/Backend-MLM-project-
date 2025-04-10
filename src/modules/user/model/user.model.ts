@@ -8,6 +8,7 @@ import { bankDetailSchema, IBankDetail } from "./bankDetail.model";
  * Interface representing a user.
  */
 export interface IUser {
+  // _id?:string;
   firstName: string;
   lastName: string;
   phone?: string;

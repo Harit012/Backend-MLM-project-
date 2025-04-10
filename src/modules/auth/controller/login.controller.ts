@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
-import { FilterQuery, Model, Types } from "mongoose";
+import jwt from "jsonwebtoken";
 import User, { IUser } from "../../user/model/user.model";
 import path from "path";
 import fs from "fs";
+import bcrypt from 'bcrypt';
+import { generateJWT } from "../../../utils/jwtGenerator";
+import { tokenBlacklist } from "../../../utils/tokenBlackList";
+
 
 const { JWT_SECRET } = process.env as { JWT_SECRET: string };
 
@@ -29,27 +33,27 @@ export const logIn = async (req: Request, res: Response): Promise<any> => {
       }
   
       // Compare password
-    //   const isMatch = await bcrypt.compare(password, user.password);
-      if (!(user.password === password)) {
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
         return res.status(401).json({
           success: false,
           message: "Invalid password",
         });
-      }
-  
-      // Optionally generate token here (JWT, etc.)
-  
-      return res.status(200).json({
-        success: true,
-        message: "Login successful",
-        data: {
-          id: user._id,
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          phone: user.phone,
-        },
-      });
-  
+      }else{
+        let token = generateJWT(user._id);
+        res.set("id", user._id.toString());
+        res.set("Authorization", `Bearer ${token}`);
+        return res.status(200).json({
+          success: true,
+          message: "Login successful",
+          data: {
+            id: user._id,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            phone: user.phone,
+          },
+        });
+      }   
     } catch (error) {
       console.error("Login error:", error);
       return res.status(500).json({
@@ -137,9 +141,9 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       // Generate unique referral code for new user
     //   const userReferralCode = `${firstName.toLowerCase()}${Date.now()}`;
       const userReferralCode =generateReferralCode();
-  
+      password =await hashPassword(password)
       // Create new user
-      const newUser = await User.create({
+      const newUser:any = await User.create({
         firstName,
         lastName,
         phone,
@@ -150,7 +154,9 @@ export const register = async (req: Request, res: Response): Promise<any> => {
         direction,
         profilePath
       });
-  
+      let token = generateJWT(newUser._id)
+      res.set("id", newUser._id.toString());
+      res.set("Authorization", `Bearer ${token}`);
       return res.status(200).send({ success: true, data: newUser });
     } catch (error: any) {
         if(profilePath != "no-File"){
@@ -165,6 +171,28 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     }
   };
   
+  export const logOut = async (req: Request, res: Response): Promise<void> => {
+    const authHeader = req.header("Authorization");
+    const token = authHeader?.split(" ")[1];
+  
+    if (!token) {
+      res.status(400).json({ message: "Token missing" });
+      return;
+    }
+  
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as { jti: string };
+  
+      if (decoded?.jti) {
+        tokenBlacklist.add(decoded.jti); // ✅ Add token ID to blacklist
+      }
+  
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch (err) {
+      res.status(400).json({ message: "Invalid token" });
+    }
+  };
+  
   const generateReferralCode = (length = 8): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -172,4 +200,14 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
+  };
+
+  const hashPassword = async (plainPassword: string): Promise<string> => {
+    const saltRounds = 12;
+    const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+    return hashedPassword;
+  };
+
+  const verifyPassword = async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
+    return await bcrypt.compare(plainPassword, hashedPassword);
   };

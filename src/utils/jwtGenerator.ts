@@ -1,4 +1,5 @@
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
 /**
  * Generate JWT token
@@ -9,10 +10,12 @@ import jwt from "jsonwebtoken";
  */
 export const generateJWT = (
   userId: string,
-  secret: string,
-  expiresIn: string = "1d"
+  expiresIn: string = "d"
 ): string => {
-  const payload = { id: userId };
-    return "abc"
-//   return jwt.sign(payload, secret, { expiresIn });
+  let secret:string = process.env.JWT_SECRET || "secret"
+  const payload = {
+    id: userId,
+    jti: uuidv4(), // ✅ unique ID for this token
+  };
+  return jwt.sign(payload, secret);
 };
