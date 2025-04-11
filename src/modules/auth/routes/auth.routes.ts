@@ -9,11 +9,11 @@ import { authenticateJWT } from "../../../middlewares/auth.middleware";
 const Auth: Router = express.Router();
 
 // Auth.get("/auth/signin",asyncHandler(signIn))
-Auth.post("/auth/login",validateRequest(AuthParams.login),logIn)
+Auth.post("login",validateRequest(AuthParams.login),logIn)
 
-Auth.post("/auth/register",uploadImage.single("profilePhoto"),validateRequest(AuthParams.register),register)
+Auth.post("/register",uploadImage.single("profilePhoto"),validateRequest(AuthParams.register),register)
 
-Auth.get("/auth/logout",authenticateJWT,logOut)
+Auth.get("/logout",authenticateJWT,logOut)
 
 
 export default Auth;
