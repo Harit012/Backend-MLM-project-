@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import { bankDetailSchema, IBankDetail } from "./bankDetail.model";
+import { Counter } from "./counter.model";
 
 // import { autoIncrementPlugin } from "../../../config/autoIncrement.plugin";
 // import { searchKeyFilterPlugin } from "../../../utils/mongoose.utils";
@@ -24,7 +25,10 @@ export interface IUser {
   parentPath?: string;
   direction?: string;
   profilePath?: string;
-  bankDetail?: IBankDetail
+  bankDetail?: IBankDetail;
+  walletBalance?:number
+  totalEarning?:number;
+  isSuperUser?:boolean;
 }
 
 /**
@@ -45,7 +49,11 @@ const userSchema: Schema = new Schema<IUser>(
     isApproved:{type:Boolean,default:false},
     direction:{type:String, required:true},
     profilePath:{type:String, required:true},
-    bankDetail: { type: bankDetailSchema, default: {} }
+    bankDetail: { type: bankDetailSchema, default: {} },
+    uniqueId:{ type: Number, unique: true },
+    walletBalance:{type:Number, default:0},
+    totalEarning:{type:Number, default:0},
+    isSuperUser:{type:Boolean, default:false}
   },
   {
     timestamps: true, // adds createdAt and updatedAt
@@ -60,6 +68,21 @@ const userSchema: Schema = new Schema<IUser>(
 
 // Index for faster search on searchKey
 // userSchema.index({ searchKey: 1 });
+userSchema.pre('save', async function (next) {
+  if (!this.isNew) return next(); // Only run on new docs
+
+  try {
+    const counter = await Counter.findByIdAndUpdate(
+      { _id: 'user' },
+      { $inc: { sequenceValue: 1 } },
+      { new: true, upsert: true } // create if not exists
+    );
+    this.uniqueId = counter.sequenceValue;
+    next();
+  } catch (err) {
+    console.log(err)
+  }
+});
 
 
 // Create and export the Mongoose model for user

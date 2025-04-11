@@ -80,7 +80,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       lastName = lastName?.trim();
       phone = phone?.trim();
       email = email?.trim().toLowerCase();
-      referalCode = referalCode?.trim().toLowerCase();
+      referalCode = referalCode?.trim();
     
       // Parallel check for existing email and phone number
       const [existingEmailUser, existingPhoneUser] = await Promise.all([
@@ -121,7 +121,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       }
   
       // Build the path using parent path and lowercase first name
-      const path2 = `${parentUser.parentPath}/${parentUser.firstName.toLowerCase()}`;
+      const path2 = `${parentUser.parentPath}/${parentUser.firstName.toLowerCase()}_${parentUser.uniqueId}`;
   
       // Count number of children under this path
       const childCount = await User.countDocuments({ parentPath: path2 });
@@ -211,3 +211,114 @@ export const register = async (req: Request, res: Response): Promise<any> => {
   const verifyPassword = async (plainPassword: string, hashedPassword: string): Promise<boolean> => {
     return await bcrypt.compare(plainPassword, hashedPassword);
   };
+
+
+//  REGISTER FOR ADMIN user
+  // export const register = async (req: Request, res: Response): Promise<any> => {
+  //   let profilePath = req.file? req.file.filename : "no-File"
+  //   try {
+  //     // Destructure and sanitize input
+  //     let {
+  //       firstName,
+  //       lastName,
+  //       phone,
+  //       email,
+  //       password,
+  //       referalCode,
+  //     } = req.body;
+  //     // Normalize input
+  //     firstName = firstName?.trim();
+  //     lastName = lastName?.trim();
+  //     phone = phone?.trim();
+  //     email = email?.trim().toLowerCase();
+  //     referalCode = referalCode?.trim().toLowerCase();
+    
+  //     // Parallel check for existing email and phone number
+  //     const [existingEmailUser, existingPhoneUser] = await Promise.all([
+  //       User.findOne({ email }),
+  //       User.findOne({ phone }),
+  //     ]);
+  
+  //     if (existingEmailUser) {
+  //       if(profilePath != "no-File"){
+  //           fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+  //       }
+  //       return res.status(409).send({
+  //         success: false,
+  //         message: "User with same email already exists",
+  //       });
+  //     }
+  
+  //     if (existingPhoneUser) {
+  //       if(profilePath != "no-File"){
+  //           fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+  //       }
+  //       return res.status(409).send({
+  //         success: false,
+  //         message: "User with same phone number already exists",
+  //       });
+  //     }
+  
+  //     // Find parent user using referral code
+  //     // const parentUser = await User.findOne({ referalCode });
+  //     // if (!parentUser) {
+  //     //   if(profilePath != "no-File"){
+  //     //       fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+  //     //   }
+  //     //   return res.status(404).send({
+  //     //     success: false,
+  //     //     message: "Referral ID not found",
+  //     //   });
+  //     // }
+  
+  //     // Build the path using parent path and lowercase first name
+  //     // const path2 = `${parentUser.parentPath}/${parentUser.firstName.toLowerCase()}`;
+  
+  //     // Count number of children under this path
+  //     // const childCount = await User.countDocuments({ parentPath: path2 });
+  //     // let direction = "left"
+  //     // if (childCount >= 2) {
+  //     //   if(profilePath != "no-File"){
+  //     //       fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+  //     //   }
+  //     //   return res.status(409).send({
+  //     //     success: false,
+  //     //     message: "Referral is expired or fully used",
+  //     //   });
+  //     // }else if(childCount == 0){
+  //     //   direction = "right"
+  //     // }
+  
+  //     // Generate unique referral code for new user
+  //   //   const userReferralCode = `${firstName.toLowerCase()}${Date.now()}`;
+  //     const userReferralCode =generateReferralCode();
+  //     password =await hashPassword(password)
+  //     // Create new user
+  //     const newUser:any = await User.create({
+  //       firstName,
+  //       lastName,
+  //       phone,
+  //       email,
+  //       password,
+  //       // parentPath: path2,
+  //       parentPath: 'root',
+  //       referalCode: userReferralCode,
+  //       direction: "right",
+  //       profilePath
+  //     });
+  //     let token = generateJWT(newUser._id)
+  //     res.set("id", newUser._id.toString());
+  //     res.set("Authorization", `Bearer ${token}`);
+  //     return res.status(200).send({ success: true, data: newUser });
+  //   } catch (error: any) {
+  //       if(profilePath != "no-File"){
+  //           fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+  //       }
+  //     console.error("Registration Error:", error);
+  //     return res.status(500).send({
+  //       success: false,
+  //       message: "Something went wrong during registration",
+  //       error: error.message || error,
+  //     });
+  //   }
+  // };
