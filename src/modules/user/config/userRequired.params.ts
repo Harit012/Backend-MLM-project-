@@ -3,9 +3,13 @@ import { ValidationParam, createValidationParams } from "../../../middlewares/va
 const commonValidationParams: ValidationParam[] = [{ name: "id", type: "ObjectId", isParam: true, required: true }];
 
 export const UserParams = createValidationParams({
-  login: [],
+  approveUserValidator: [
+    { name: "userId", type: "ObjectId", required:true },
+  ],
+  updateUserDetails:[
+    {name:"id", type:"ObjectId", required:true,isParam:true}
+  ],
   register: [
-    { name: "firstName", type: "string", required:true },
     { name: "lastName", type: "string", required: true },
     { name: "phone", type: "string", required:true , validate:true },
     { name:"email", type:"string",required:true , validate:true},

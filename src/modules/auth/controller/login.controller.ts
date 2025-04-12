@@ -121,7 +121,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       }
   
       // Build the path using parent path and lowercase first name
-      const path2 = `${parentUser.parentPath}/${parentUser.firstName.toLowerCase()}_${parentUser.uniqueId}`;
+      const path2 = `${parentUser.parentPath}/${parentUser.uniqueId}`;
   
       // Count number of children under this path
       const childCount = await User.countDocuments({ parentPath: path2 });

@@ -3,10 +3,15 @@ import { asyncHandler } from "../../../utils/asyncHandler";
 import { validateRequest } from "../../../middlewares/validation.middleware";
 import { uploadImage } from "../../../middlewares/multerConfig";
 import { authenticateJWT } from "../../../middlewares/auth.middleware";
-import { getProfile } from "../controller/user.controller";
+import { approveUser, getProfile, UpdateUserDetails } from "../controller/user.controller";
+import { UserParams } from "../config/userRequired.params";
 
 const User: Router = express.Router();
 
 User.get('/getProfile',getProfile)
 
-export default User
+User.patch('/approve',validateRequest(UserParams.approveUserValidator),approveUser)
+
+User.put('/update/:id',uploadImage.single("profilePhoto"),validateRequest(UserParams.updateUserDetails),UpdateUserDetails)
+
+export default User 
