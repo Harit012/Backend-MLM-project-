@@ -109,7 +109,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       }
   
       // Find parent user using referral code
-      const parentUser = await User.findOne({ referalCode });
+      const parentUser = await User.findOne({ referalCode , isApproved:true });
       if (!parentUser) {
         if(profilePath != "no-File"){
             fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))

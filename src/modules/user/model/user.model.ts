@@ -26,7 +26,8 @@ export interface IUser {
   direction?: string;
   profilePath?: string;
   bankDetail?: IBankDetail;
-  walletBalance?:number
+  walletBalance?:number;
+  withdrawnAmount?:number;
   totalEarning?:number;
   isSuperUser?:boolean;
 }
@@ -53,6 +54,7 @@ const userSchema: Schema = new Schema<IUser>(
     uniqueId:{ type: Number, unique: true },
     walletBalance:{type:Number, default:0},
     totalEarning:{type:Number, default:0},
+    withdrawnAmount:{type:Number, default:0},
     isSuperUser:{type:Boolean, default:false}
   },
   {
