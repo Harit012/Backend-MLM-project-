@@ -111,7 +111,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<any> => 
       if (!user) {
         return res.status(404).send({ success: false, message: "User not found" });
       }
-  
+      
       const userUid = `/${user.uniqueId}/`;
     //   console.log(userUid)
       // Aggregation pipeline to find users with parentPath containing userUid

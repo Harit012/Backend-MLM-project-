@@ -2,11 +2,12 @@ import express, { Router } from "express";
 import Auth from "../modules/auth/routes/auth.routes";
 import User from "../modules/user/routes/user.route";
 import { authenticateJWT } from "../middlewares/auth.middleware";
+import { AuthapiLimiter } from "../middlewares/rateLimiter";
 
 
 let router = express.Router();
 
-router.use("/auth", Auth)
+router.use("/auth", AuthapiLimiter ,Auth)
 
 router.use("/user",authenticateJWT, User)
 
