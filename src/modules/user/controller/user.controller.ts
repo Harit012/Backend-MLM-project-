@@ -3,35 +3,40 @@ import User, { IUser } from "../../user/model/user.model";
 import path from "path";
 import fs from "fs";
 import { updateFields } from "../../../utils/updateFunc";
+import { tokenBlacklist } from "../../../utils/tokenBlackList";
 
-export const getProfile = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.headers.id;
+export const getProfile = async (req: Request, res: Response): Promise<any> => {
+    const  userId  = (req as any).userId;
     try {
         const user = await User.findById(userId);
         if (!user) {
-            res.status(404).send({success:false , message: "User not found" });
-            return;
+            return res.status(404).send({success:false , message: "User not found" });
         }
-        res.status(200).send({success:true , data:user});
+        return res.status(200).send({success:true , data:user});
     } catch (err:any) {
-        res.status(500).send({success:false , message: err.message });
+        return res.status(500).send({success:false , message: err.message });
     }
 };
 
-export const approveUser = async (req:Request,res:Response):Promise<void> =>{
+export const approveUser = async (req:Request,res:Response):Promise<any> =>{
     try{
+        const  id  = (req as any).userId;
         const { userId } = req.body;
-        let user = await User.findById(userId);
+        let requester = await User.findById(id);
+        if(!requester?.isSuperUser){
+            return res.status(409).send({success:false, message:"Youe are not authorize to approve a user"})
+        }
+        let user = await User.findByIdAndUpdate(userId,{$set:{isApproved:true}},{new:true});
         if(!user){
-            res.status(404).send({success:false, message:"No user exist with that id"})
+            return res.status(404).send({success:false, message:"No user exist with that id"})
         }
         // let fullPath = user?.parentPath;
         let parentArray:any = user?.parentPath?.split("/");
-        parentArray =parentArray?.slice(1,parentArray.length)
+        parentArray =parentArray?.slice(1,parentArray.length-1)
         parentArray = parentArray?.map((ele:any)=>{
             return Number(ele);
         });
-        console.log(parentArray)
+        // console.log(parentArray)
         res.send({success:true, data:parentArray})
     }catch(err:any){
         res.status(500).send({success:false , message: err.message });
@@ -39,20 +44,20 @@ export const approveUser = async (req:Request,res:Response):Promise<void> =>{
 }
 
 export const UpdateUserDetails = async (req:Request,res:Response):Promise<any> =>{
+    let profilePath :any = null
+    if(req.file){
+        profilePath = req.file.filename
+    }
     try{
         let { id } = req.params;
         let { firstName , lastName , email , phone  , isSuperUser = false} = req.body
-        let profilePath :any = null
-        if(req.file){
-            profilePath = req.file.filename
-        }
         firstName = firstName?.trim();
         lastName = lastName?.trim();
         phone = phone?.trim();
         email = email?.trim().toLowerCase();
         let existUser:any = await User.findById(id);
         if(!existUser){
-            res.status(404).send({success:false , message:"User you want to update does not exist in records"})
+            return res.status(404).send({success:false , message:"User you want to update does not exist in records"})
         }
         if(email){
             let usr = await User.findOne({ email })
@@ -79,13 +84,62 @@ export const UpdateUserDetails = async (req:Request,res:Response):Promise<any> =
             }
         }
         let update = updateFields({ firstName , lastName , email , phone, profilePath  , isSuperUser})
-        console.log(update)
+        // console.log(update)
         let user = await User.findByIdAndUpdate(id, update,{new:true});
         if(existUser?.profilePath != "no-File" && user?.profilePath != existUser?.profilePath){
             fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",existUser?.profilePath))
         }
         return res.status(200).send({success:true, user})
     }catch(err:any){
-        res.status(500).send({success:false , message: err.message });
+        if(profilePath){
+            fs.unlinkSync(path.join(__dirname,"../../../../uploads/images",profilePath))
+        }
+        return res.status(500).send({success:false , message: err.message });
     }
 }
+
+export const getAllUsers = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const  id  = (req as any).userId;
+  
+      if (!id) {
+        return res.status(400).send({ success: false, message: "User ID not provided in headers" });
+      }
+  
+      const user = await User.findById(id);
+  
+      if (!user) {
+        return res.status(404).send({ success: false, message: "User not found" });
+      }
+  
+      const userUid = `/${user.uniqueId}/`;
+    //   console.log(userUid)
+      // Aggregation pipeline to find users with parentPath containing userUid
+      const users = await User.aggregate([
+        {
+          $match: {
+            parentPath: { $regex: userUid, $options: 'i' }
+          },
+        }
+      ]);
+  
+      return res.status(200).send({ success: true, data: [user,...users] });
+  
+    } catch (err: any) {
+      return res.status(500).send({ success: false, message: err.message });
+    }
+  };
+
+  export const logOut = async (req: Request, res: Response): Promise<any> => {
+    const jti = (req as any).jti
+    try {
+  
+      if (jti) {
+        tokenBlacklist.add(jti); // ✅ Add token ID to blacklist
+      }
+      console.log(tokenBlacklist)
+      return res.status(200).json({ message: "Logged out successfully" });
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+  };

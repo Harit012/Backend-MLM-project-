@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from "uuid";
  */
 export const generateJWT = (
   userId: string,
-  expiresIn: string = "d"
+  expiresIn: string = "1d"
 ): string => {
   let secret:string = process.env.JWT_SECRET || "secret"
   const payload = {

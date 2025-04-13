@@ -121,7 +121,7 @@ export const register = async (req: Request, res: Response): Promise<any> => {
       }
   
       // Build the path using parent path and lowercase first name
-      const path2 = `${parentUser.parentPath}/${parentUser.uniqueId}`;
+      const path2 = `${parentUser.parentPath}${parentUser.uniqueId}/`;
   
       // Count number of children under this path
       const childCount = await User.countDocuments({ parentPath: path2 });
@@ -171,27 +171,27 @@ export const register = async (req: Request, res: Response): Promise<any> => {
     }
   };
   
-  export const logOut = async (req: Request, res: Response): Promise<void> => {
-    const authHeader = req.header("Authorization");
-    const token = authHeader?.split(" ")[1];
+  // export const logOut = async (req: Request, res: Response): Promise<void> => {
+  //   const authHeader = req.header("Authorization");
+  //   const token = authHeader?.split(" ")[1];
   
-    if (!token) {
-      res.status(400).json({ message: "Token missing" });
-      return;
-    }
+  //   if (!token) {
+  //     res.status(400).json({ message: "Token missing" });
+  //     return;
+  //   }
   
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { jti: string };
+  //   try {
+  //     const decoded = jwt.verify(token, JWT_SECRET) as { jti: string };
   
-      if (decoded?.jti) {
-        tokenBlacklist.add(decoded.jti); // ✅ Add token ID to blacklist
-      }
+  //     if (decoded?.jti) {
+  //       tokenBlacklist.add(decoded.jti); // ✅ Add token ID to blacklist
+  //     }
   
-      res.status(200).json({ message: "Logged out successfully" });
-    } catch (err) {
-      res.status(400).json({ message: "Invalid token" });
-    }
-  };
+  //     res.status(200).json({ message: "Logged out successfully" });
+  //   } catch (err) {
+  //     res.status(400).json({ message: "Invalid token" });
+  //   }
+  // };
   
   const generateReferralCode = (length = 8): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
