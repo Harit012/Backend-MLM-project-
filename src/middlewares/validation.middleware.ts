@@ -9,7 +9,7 @@ export interface ValidationParam {
   type: ValidationType; // The type of the parameter to validate with
   required?: boolean; // Whether the parameter is required
   isAllowBlank?: boolean; // Whether the parameter is allowed to be blank
-  validate?: boolean; // Whether the parameter is required to be validated
+  validate?:boolean; // Whether the parameter is required to be validated
   enum?: any[];
   isArray?: boolean;
   child?: ValidationParam[]; // Optional array of child parameters for nested object validation
@@ -312,6 +312,14 @@ export const testRegExp = async (param: string, value: string): Promise<boolean>
       regExpRule = "^[0-9]{10}$"; // Exactly 10 digits
       break;
 
+    case "accountNumber":
+      regExpRule = "^[0-9]{14}$"; // Only digits, length 14
+      break;
+
+    case "ifscCode":
+      regExpRule = "^[A-Z]{4}[0-9]{7}$"; // length 11 first 4 alphabets in uppercase then 7 numeric
+      break;
+      
     default:
       return false;
   }

@@ -11,3 +11,12 @@ export const updateFields = (obj: Record<string, any>) => {
     return update;
   };
   
+export const prefixFields= (updateObj: any, prefix: string): any => {
+    const result: any = {};
+    for (const key in updateObj) {
+      if (updateObj.hasOwnProperty(key)) {
+        result[`${prefix}.${key}`] = updateObj[key];
+      }
+    }
+    return result;
+  }
