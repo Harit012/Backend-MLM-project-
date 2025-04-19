@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 import { updateFields } from "../../../utils/updateFunc";
 import { tokenBlacklist } from "../../../utils/tokenBlackList";
+import UserRequest from "../../request/model/request.model";
+import { RequestReasons } from "../../../utils/constants";
 
 export const getProfile = async (req: Request, res: Response): Promise<any> => {
   const userId = (req as any).userId;
@@ -231,7 +233,7 @@ export const approveUser = async (
       // Step 4: Increase totalEarnings of each parent by 2500
       await User.updateMany(
         { uniqueId: { $in: parentArray } },
-        { $inc: { totalEarning: 2500 } }
+        { $inc: { totalEarning: 1500 } }
       );
     }
 
@@ -243,7 +245,7 @@ export const approveUser = async (
 
 export const requestWithdrawal = async (req: Request, res: Response): Promise<any> => {
   try{
-    
+   
   }catch(err:any){
     return res.status(500).send({ success: false, message: err.message });
 

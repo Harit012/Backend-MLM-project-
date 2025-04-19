@@ -319,6 +319,9 @@ export const testRegExp = async (param: string, value: string): Promise<boolean>
     case "ifscCode":
       regExpRule = "^[A-Z]{4}[0-9]{7}$"; // length 11 first 4 alphabets in uppercase then 7 numeric
       break;
+    
+    case "amountToWithdraw":
+      return parseFloat(value) > 0; // ✅ Only allow if > 0
       
     default:
       return false;
